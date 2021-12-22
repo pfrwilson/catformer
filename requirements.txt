@@ -1,0 +1,9 @@
+torch
+hydra-core
+omegaconf
+einops
+torchvision
+numpy
+pandas
+tqdm
+pillow
