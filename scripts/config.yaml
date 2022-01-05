@@ -5,7 +5,7 @@ dataset:
   target_size: [256, 256]
 
 model:
-  name: 'vit'
+  name: 'resnet'
   input_shape: [256, 256]
   num_channels: 3
   patch_size: [16, 16]
@@ -23,5 +23,6 @@ optimizer:
 training:
   epochs: 100
   batch_size: 256
+  load_from_latest_ckpt: false # epoch from which to load the model
 
-
+expt_dir: '/Users/paulwilson/catformer/test_expt'
