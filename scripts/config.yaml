@@ -1,6 +1,6 @@
 
 dataset:
-  root_dir: '/Users/paulwilson/research/data/dogs-vs-cats/train'
+  root_dir: '/home/paulw/data/train'
   use_augmentations: true
   target_size: [256, 256]
 
