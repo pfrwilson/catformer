@@ -16,7 +16,9 @@ def main(args: DictConfig):
 
     # SETUP EXPERIMENT DIRECTORY
     expt_dir = args.expt_dir
-    shutil.copy(CONFIG_PATH, dst=os.path.join(expt_dir, 'config.yaml'))
+    shutil.copy(
+        src=os.path.join(CONFIG_PATH, 'config.yaml')
+                         , dst=os.path.join(expt_dir, 'config.yaml'))
     if not os.path.isdir(expt_dir):
         os.mkdir(expt_dir)
     ckpt_dir = os.path.join(expt_dir, 'ckpt')
