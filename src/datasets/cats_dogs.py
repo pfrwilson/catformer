@@ -23,15 +23,18 @@ class DogsVsCats(Dataset):
             'std': np.array([0.2601033, 0.25352228, 0.2561279], dtype='float32')
         }
 
-        for filename in tqdm(os.listdir(root)):
-            species, number, ext = re.match('(\w+)\.(\d+)\.(\w+)', filename).groups()
-            label = 0. if species == 'cat' else (1. if species == 'dog' else np.NAN)
-            self.dataframe = self.dataframe.append({
-                'species': species,
-                'number': int(number),
-                'filename': filename,
-                'label': label,
-            }, ignore_index=True)
+        with tqdm(os.listdir(root)) as pbar:
+            pbar.set_description('Loading annotation data')
+            for filename in pbar:
+                species, number, ext = re.match('(\w+)\.(\d+)\.(\w+)', filename).groups()
+                label = 0. if species == 'cat' else (1. if species == 'dog' else np.NAN)
+                self.dataframe = self.dataframe.append({
+                    'species': species,
+                    'number': int(number),
+                    'filename': filename,
+                    'label': label,
+                }, ignore_index=True)
+                pbar.set_postfix({'filename': filename})
 
         if shuffle:
             self.dataframe = self.dataframe.sample(frac=1).reset_index(drop=True)
@@ -48,7 +51,8 @@ class DogsVsCats(Dataset):
                 img = Image.open(f)
                 img.load()
 
-            img = self.transform(img)
+            if self.transform:
+                img = self.transform(img)
 
             return img, label
         except KeyError:
