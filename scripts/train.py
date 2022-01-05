@@ -8,10 +8,10 @@ from src.models.factory import ModelFactory
 import os
 import shutil
 
-CONFIG_PATH = os.path.join(os.getcwd(), 'scripts', 'config.yaml')
+CONFIG_PATH = os.path.join(os.getcwd(), 'scripts')
 
 
-@hydra.main(config_path=CONFIG_PATH)
+@hydra.main(config_path=CONFIG_PATH, config_name='config')
 def main(args: DictConfig):
 
     # SETUP EXPERIMENT DIRECTORY
