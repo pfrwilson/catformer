@@ -1,5 +1,6 @@
-
+import torch
 from omegaconf import DictConfig
+
 
 class ModelFactory:
     def __init__(self, config: DictConfig):
@@ -21,6 +22,13 @@ class ModelFactory:
                 self.config.mlp_dim,
                 self.config.dropout
             )
+
+        elif self.config.name == 'resnet':
+            from torchvision.models import resnet18
+
+            model = resnet18(pretrained=True)
+            model.fc = torch.nn.Linear(in_features=512, out_features=2)
+
         else:
             raise NotImplementedError(f'model {self.config.name} is not supported.')
 
