@@ -57,7 +57,7 @@ class Attention(nn.Module):
     def __init__(self, dim, heads = 8, dim_head = 64, dropout = 0.):
         super().__init__()
 
-        # self.cached_attn = None
+        self.cached_attn = None
 
         inner_dim = dim_head * heads
         project_out = not (heads == 1 and dim_head == dim)
@@ -80,7 +80,7 @@ class Attention(nn.Module):
         dots = torch.matmul(q, k.transpose(-1, -2)) * self.scale
 
         attn = self.attend(dots)
-        #self.cached_attn = einops.reduce(attn, 'b h n n1 -> b n n1', 'mean')
+        self.cached_attn = einops.reduce(attn, 'b h n n1 -> b n n1', 'mean')
 
         out = torch.matmul(attn, v)
         out = rearrange(out, 'b h n d -> b n (h d)')
