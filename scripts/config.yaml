@@ -25,4 +25,4 @@ training:
   batch_size: 256
   load_from_latest_ckpt: false # epoch from which to load the model
 
-expt_dir: '/Users/paulwilson/catformer/test_expt'
+expt_dir: '/home/paulw/catformer/test_expt'
