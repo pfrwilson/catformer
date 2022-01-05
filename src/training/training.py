@@ -6,30 +6,48 @@ from torch.optim import Optimizer, Adam
 
 
 def train_loop(dataloader: DataLoader, model: nn.Module, loss_fn,
-               optimizer: Optimizer = None, verbose=True):
+               optimizer: Optimizer = None, verbose=True, epoch=None):
 
     loss, correct = 0, 0
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
 
-    for X, y in tqdm(dataloader):
+    with tqdm(dataloader) as pbar:
 
-        optimizer.zero_grad()
+        if epoch is not None:
+            pbar.set_description(f'TRAIN: EPOCH {epoch}')
 
-        probs = model(X)
-        batch_loss = loss_fn(probs, y)
+        for X, y in pbar:
 
-        batch_loss.backward()
-        optimizer.step()
+            batch_size = len(X)
 
-        labels = torch.argmax(y, dim=-1, keepdim=True)
-        pred = torch.argmax(probs, dim=-1, keepdim=True)
+            optimizer.zero_grad()
 
-        correct += torch.sum(labels == pred).item()
-        loss += batch_loss
+            logits = model(X)
+            batch_loss = loss_fn(logits, y)
 
-    loss = loss/num_batches
-    accuracy = correct/size
+            batch_loss.backward()
+            optimizer.step()
+
+            labels = torch.argmax(y, dim=-1, keepdim=True)
+            pred = torch.argmax(logits, dim=-1, keepdim=True)
+
+            batch_correct = torch.sum(labels == pred).item()
+            correct += batch_correct
+            loss += batch_loss
+
+            pbar.set_postfix({
+                'loss': batch_loss.item(),
+                'accuracy': batch_correct/batch_size
+            })
+
+        loss = loss/num_batches
+        accuracy = correct/size
+
+        pbar.set_postfix({
+            'loss': loss,
+            'accuracy': accuracy
+        })
 
     if verbose:
         print(f'Training metrics: average loss {loss} and accuracy {accuracy*100}% for epoch')
@@ -49,11 +67,11 @@ def eval_loop(dataloader: DataLoader, model: nn.Module, loss_fn, verbose=True):
     for X, y in tqdm(dataloader):
 
         with torch.no_grad():
-            probs = model(X)
-            batch_loss = loss_fn(probs, y)
+            logits = model(X)
+            batch_loss = loss_fn(logits, y)
 
         labels = torch.argmax(y, dim=-1, keepdim=True)
-        pred = torch.argmax(probs, dim=-1, keepdim=True)
+        pred = torch.argmax(logits, dim=-1, keepdim=True)
 
         correct += torch.sum(labels == pred).item()
         loss += batch_loss
