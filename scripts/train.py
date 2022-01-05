@@ -8,7 +8,7 @@ from src.models.factory import ModelFactory
 import os
 import shutil
 
-CONFIG_PATH = os.path.join(os.getcwd(), 'config.yaml')
+CONFIG_PATH = os.path.join(os.getcwd(), 'scripts', 'config.yaml')
 
 
 @hydra.main(config_path=CONFIG_PATH)
