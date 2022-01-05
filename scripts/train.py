@@ -5,10 +5,28 @@ from omegaconf import DictConfig
 from src.training.training import train_loop, eval_loop
 from src.datasets.cats_dogs import DogsVsCats
 from src.models.factory import ModelFactory
+import os
+import shutil
+
+CONFIG_PATH = os.path.join(os.getcwd(), 'config.yaml')
 
 
-@hydra.main(config_path='../config.yaml')
+@hydra.main(config_path=CONFIG_PATH)
 def main(args: DictConfig):
+
+    # SETUP EXPERIMENT DIRECTORY
+    expt_dir = args.expt_dir
+    shutil.copy(CONFIG_PATH, dst=os.path.join(expt_dir, 'config.yaml'))
+    if not os.path.isdir(expt_dir):
+        os.mkdir(expt_dir)
+    ckpt_dir = os.path.join(expt_dir, 'ckpt')
+    if not os.path.isdir(ckpt_dir):
+        os.mkdir(ckpt_dir)
+    if not args.training.load_from_latest_ckpt:
+        shutil.rmtree(ckpt_dir)
+        os.mkdir(ckpt_dir)
+    checkpoints = os.listdir(ckpt_dir)
+
 
     # DATASET
     dataset = DogsVsCats(args.dataset.root_dir,
@@ -42,6 +60,8 @@ def main(args: DictConfig):
     # MODEL
     model_factory = ModelFactory(args.model)
     model = model_factory.build_model()
+    if args.training.load_from_latest_ckpt:
+        model.load_state_dict(torch.load(checkpoints[-1]))
 
     # OPTIMIZER
     optimizer = torch.optim.Adam(model.parameters(), lr=args.optimizer.learning_rate)
@@ -54,14 +74,15 @@ def main(args: DictConfig):
         'val_accuracy': []
     }
 
-    for epoch in range(args.training.epochs):
-        print(f'EPOCH {epoch}/{args.training.epochs - 1}')
+    first_epoch = len(checkpoints)
+    for epoch in range(first_epoch, args.training.epochs + first_epoch):
 
         metrics = train_loop(
             DataLoader(datasets['train'], batch_size=args.training.batch_size),
             model,
             torch.nn.CrossEntropyLoss(),
-            optimizer=optimizer
+            optimizer=optimizer,
+            epoch=epoch
         )
 
         val_metrics = eval_loop(
@@ -74,6 +95,8 @@ def main(args: DictConfig):
         history['accuracy'].append(metrics['accuracy'])
         history['val_loss'].append(val_metrics['loss'])
         history['val_accuracy'].append(val_metrics['accuracy'])
+
+        torch.save(model.state_dict(), os.path.join(ckpt_dir, f'checkpoint_{epoch}.pth'))
 
 
 if __name__ == '__main__':
