@@ -4,7 +4,6 @@ import torch.utils.data
 from omegaconf import DictConfig
 from src.training.training import train_loop, eval_loop
 from src.datasets.cats_dogs import DogsVsCats
-from src.models.factory import ModelFactory
 import os
 import shutil
 
@@ -28,7 +27,6 @@ def main(args: DictConfig):
         shutil.rmtree(ckpt_dir)
         os.mkdir(ckpt_dir)
     checkpoints = os.listdir(ckpt_dir)
-
 
     # DATASET
     dataset = DogsVsCats(args.dataset.root_dir,
@@ -60,8 +58,18 @@ def main(args: DictConfig):
     }
 
     # MODEL
-    model_factory = ModelFactory(args.model)
-    model = model_factory.build_model()
+
+    if args.model.method == 'store':
+        from src.models.store import get_model
+        model = get_model(args.model.name)
+
+    elif args.model.method == 'factory':
+        from src.models.factory import build_model
+        model = build_model(args.model.name, args.model.config)
+
+    else:
+        raise KeyError(f'method {args.model.method} is not recognized.')
+
     if args.training.load_from_latest_ckpt:
         model.load_state_dict(torch.load(checkpoints[-1]))
 
