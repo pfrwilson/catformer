@@ -2,20 +2,11 @@
 dataset:
   root_dir: '/home/paulw/data/train'
   use_augmentations: true
-  target_size: [256, 256]
 
 model:
-  name: 'resnet'
-  input_shape: [256, 256]
-  num_channels: 3
-  patch_size: [16, 16]
-  num_classes: 2
-  embedding_dim: 128
-  num_heads: 4
-  depth: 4
-  head_dim: 64
-  mlp_dim: 64
-  dropout: 0.2   # defaults to 0
+  name: 'resnet_18'
+  method: 'store' # alternatively, factory
+  config: # if using factory, specify model hyper parameters.
 
 optimizer:
   learning_rate: 1e-3
