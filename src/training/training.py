@@ -6,7 +6,7 @@ from torch.optim import Optimizer, Adam
 
 
 def train_loop(dataloader: DataLoader, model: nn.Module, loss_fn,
-               optimizer: Optimizer = None, verbose=True, epoch=None):
+               optimizer: Optimizer = None, epoch=None):
 
     loss, correct = 0, 0
     size = len(dataloader.dataset)
@@ -16,6 +16,8 @@ def train_loop(dataloader: DataLoader, model: nn.Module, loss_fn,
 
         if epoch is not None:
             pbar.set_description(f'TRAIN: EPOCH {epoch}')
+        else:
+            pbar.set_description('TRAIN:')
 
         for X, y in pbar:
 
@@ -29,10 +31,9 @@ def train_loop(dataloader: DataLoader, model: nn.Module, loss_fn,
             batch_loss.backward()
             optimizer.step()
 
-            labels = torch.argmax(y, dim=-1, keepdim=True)
             pred = torch.argmax(logits, dim=-1, keepdim=True)
 
-            batch_correct = torch.sum(labels == pred).item()
+            batch_correct = torch.sum(y == pred).item()
             correct += batch_correct
             loss += batch_loss
 
@@ -49,9 +50,6 @@ def train_loop(dataloader: DataLoader, model: nn.Module, loss_fn,
             'accuracy': accuracy
         })
 
-    if verbose:
-        print(f'Training metrics: average loss {loss} and accuracy {accuracy*100}% for epoch')
-
     return {
         'loss': loss,
         'accuracy': accuracy
@@ -64,25 +62,39 @@ def eval_loop(dataloader: DataLoader, model: nn.Module, loss_fn, verbose=True):
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
 
-    for X, y in tqdm(dataloader):
+    with tqdm(dataloader) as pbar:
 
-        with torch.no_grad():
-            logits = model(X)
-            batch_loss = loss_fn(logits, y)
+        pbar.set_description('EVALUATION:')
 
-        labels = torch.argmax(y, dim=-1, keepdim=True)
-        pred = torch.argmax(logits, dim=-1, keepdim=True)
+        for X, y in pbar:
 
-        correct += torch.sum(labels == pred).item()
-        loss += batch_loss
+            batch_size = len(X)
 
-    loss = loss/num_batches
-    accuracy = correct/size
+            with torch.no_grad():
+                logits = model(X)
+                batch_loss = loss_fn(logits, y)
 
-    if verbose:
-        print(f'Evaluation metrics: average loss {loss} and accuracy {accuracy*100}% for epoch')
+            pred = torch.argmax(logits, dim=-1, keepdim=True)
+
+            batch_correct = torch.sum(y == pred).item()
+            correct += batch_correct
+            loss += batch_loss
+
+            pbar.set_postfix({
+                'loss': batch_loss.item(),
+                'accuracy': batch_correct / batch_size
+            })
+
+        loss = loss/num_batches
+        accuracy = correct/size
+
+        pbar.set_postfix({
+            'loss': loss,
+            'accuracy': accuracy
+        })
 
     return {
         'loss': loss,
         'accuracy': accuracy
     }
+
