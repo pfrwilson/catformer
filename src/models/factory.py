@@ -2,35 +2,28 @@ import torch
 from omegaconf import DictConfig
 
 
-class ModelFactory:
-    def __init__(self, config: DictConfig):
-        self.config = config
+def build_model(name: str, config: dict):
+    if name == 'vit':
+        from src.models.vit import ViT
 
-    def build_model(self):
-        if self.config.name == 'vit':
-            from src.models.vit import ViT
-
+        try:
             model = ViT(
-                self.config.input_shape,
-                self.config.num_channels,
-                self.config.patch_size,
-                self.config.num_classes,
-                self.config.embedding_dim,
-                self.config.num_heads,
-                self.config.depth,
-                self.config.head_dim,
-                self.config.mlp_dim,
-                self.config.dropout
+                config['input_shape'],
+                config['num_channels'],
+                config['patch_size'],
+                config['num_classes'],
+                config['embedding_dim'],
+                config['num_heads'],
+                config['depth'],
+                config['head_dim'],
+                config['mlp_dim'],
+                config['dropout'],
             )
+        except KeyError as e:
+            raise KeyError(f'parameter {e.args[0]} not specified in config.')
 
-        elif self.config.name == 'resnet':
-            from torchvision.models import resnet18
+    else:
+        raise NotImplementedError(f'model {self.config.name} is not supported.')
 
-            model = resnet18(pretrained=True)
-            model.fc = torch.nn.Linear(in_features=512, out_features=2)
-
-        else:
-            raise NotImplementedError(f'model {self.config.name} is not supported.')
-
-        return model
+    return model
 
