@@ -1,8 +1,6 @@
-import einops
+
 import numpy as np
-import torch
 from torch.utils.data import Dataset
-import torch.nn.functional as F
 import pandas as pd
 from torchvision import transforms
 import os
@@ -25,16 +23,21 @@ class DogsVsCats(Dataset):
 
         with tqdm(os.listdir(root)) as pbar:
             pbar.set_description('Loading annotation data')
-            for filename in pbar:
+            for i, filename in enumerate(pbar):
+
                 species, number, ext = re.match('(\w+)\.(\d+)\.(\w+)', filename).groups()
-                label = 0. if species == 'cat' else (1. if species == 'dog' else np.NAN)
+
+                label = 0 if species == 'cat' else (1 if species == 'dog' else np.NAN)
+
                 self.dataframe = self.dataframe.append({
                     'species': species,
                     'number': int(number),
                     'filename': filename,
                     'label': label,
                 }, ignore_index=True)
-                pbar.set_postfix({'filename': filename})
+
+                if i % 100 == 0 :
+                    pbar.set_postfix({'filename': filename})
 
         if shuffle:
             self.dataframe = self.dataframe.sample(frac=1).reset_index(drop=True)
@@ -88,11 +91,4 @@ class DogsVsCats(Dataset):
             transforms.ToTensor(),
             transforms.Normalize(mean, std),
         ])
-
-    @staticmethod
-    def get_default_target_transform():
-
-        return transforms.Lambda(
-            lambda label: F.one_hot(torch.tensor(int(label)), num_classes=2).float()
-        )
 
