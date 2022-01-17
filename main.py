@@ -25,7 +25,7 @@ def main(
                        data_directory, 
                        batch_size)
     
-    trainer = pl.Trainer(accelerator='auto', max_epochs=max_epochs)
+    trainer = pl.Trainer(gpus=1 if torch.cuda.is_available() else None)
     trainer.fit(system)
 
 if __name__ == "__main__":
