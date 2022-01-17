@@ -5,3 +5,5 @@ einops
 pandas
 pillow
 pytorch-lightning
+transformers
+torchvision
