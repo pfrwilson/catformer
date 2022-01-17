@@ -1,6 +1,6 @@
 
 dataset:
-  root_dir: '/Users/paulwilson/data/dogs-vs-cats/train'
+  root_dir: '~/data/dogs-vs-cats/train'
 
 model:
   pretrained_transformer_name: 'google/vit-large-patch16-384'
