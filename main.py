@@ -7,7 +7,7 @@ import os
 
 
 DATA_DIRECTORY = os.path.join(
-    os.getenv('~'), 
+    os.environ['HOME'], 
     'data', 
     'dogs-vs-cats', 
     'train'
