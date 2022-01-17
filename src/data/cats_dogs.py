@@ -24,25 +24,38 @@ class DogsVsCats(Dataset):
 
     def __init__(self, root):
         self.root = root
-        self.dataframe = pd.DataFrame()
+        self.dataframe = pd.DataFrame(
+            columns={
+                'species': pd.Series(dtype=pd.StringDtype()), 
+                'filename': pd.Series(dtype=pd.StringDtype()), 
+                'sample_number': pd.Series(dtype=pd.Int32Dtype()),
+                'label': pd.Series(pd.Int64Dtype())
+            },
+            index=pd.Index(range(len(os.listdir(root)))), 
+        )
         
         with tqdm(os.listdir(root)) as pbar:
             pbar.set_description('Loading annotation data')
             for i, filename in enumerate(pbar):
 
                 species, number, ext = re.match('(\w+)\.(\d+)\.(\w+)', filename).groups()
-
+                
+                number = int(number)                          
+                            
                 label = 0 if species == 'cat' else (1 if species == 'dog' else np.NAN)
-
-                self.dataframe = self.dataframe.append({
+                
+                self.dataframe.iloc[i] = {
+                    'sample_number': number, 
                     'species': species,
-                    'number': int(number),
                     'filename': filename,
                     'label': label,
-                }, ignore_index=True)
+                }
 
                 if i % 100 == 0 :
                     pbar.set_postfix({'filename': filename})
+                    
+        self.dataframe = self.dataframe.sort_values(by=['species', 'sample_number'])
+        self.dataframe = self.dataframe.reset_index(drop=True)
 
     def __getitem__(self, idx):
         try:
