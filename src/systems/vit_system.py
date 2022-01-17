@@ -13,7 +13,8 @@ class ViTSystem(pl.LightningModule):
     def __init__(self,
                  pretrained_model_name_or_path: str, 
                  data_root,
-                 batch_size):
+                 batch_size,
+                 num_dataloader_workers=8):
         """
         Instantiates a trainable lightning module for cat/dog classification.
         Parameters:
@@ -33,6 +34,7 @@ class ViTSystem(pl.LightningModule):
         self.classifier = nn.Linear(self.hidden_size, 2)
         self.loss_fn = torch.nn.CrossEntropyLoss()
         self.batch_size = batch_size
+        self.num_dataloader_workers = num_dataloader_workers
         
     def forward(self, x, output_attentions=False):
     
@@ -104,7 +106,9 @@ class ViTSystem(pl.LightningModule):
         )
         
     def train_dataloader(self):
-        return DataLoader(self.train_ds, batch_size=self.batch_size)
+        return DataLoader(self.train_ds, batch_size=self.batch_size, 
+                          num_workers=self.num_dataloader_workers)
     
     def val_dataloader(self):
-        return DataLoader(self.val_ds, batch_size=self.batch_size)
+        return DataLoader(self.val_ds, batch_size=self.batch_size, 
+                          num_workers=self.num_dataloader_workers)
