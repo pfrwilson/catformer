@@ -30,7 +30,7 @@ class ViTSystem(pl.LightningModule):
             parameter.requires_grad = False
         self.image_size = vit.config.image_size
         self.hidden_size = vit.config.hidden_size 
-        self.classifier = nn.Linear(self.image_size, 2)
+        self.classifier = nn.Linear(self.hidden_size, 2)
         self.loss_fn = torch.nn.CrossEntropyLoss()
         self.batch_size = batch_size
         
@@ -40,6 +40,8 @@ class ViTSystem(pl.LightningModule):
         class_token = transformer_output[:, 0, :]
 
         logits = self.classifier(class_token)
+        
+        return logits
         
     def training_step(self, batch, batch_idx):
         
