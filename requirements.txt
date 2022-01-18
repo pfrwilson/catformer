@@ -7,3 +7,4 @@ pillow
 pytorch-lightning
 transformers
 torchvision
+scikit-image
