@@ -15,7 +15,7 @@ DATA_DIRECTORY = os.path.join(
 
 LOG_DIRECTORY = os.path.join(
     os.environ['HOME'],
-    '/lightning_logs'
+    'lightning_logs'
 )
 
 DEFAULT_MODEL_PATH = 'google/vit-large-patch16-384'
