@@ -112,3 +112,4 @@ class ViTSystem(pl.LightningModule):
     def val_dataloader(self):
         return DataLoader(self.val_ds, batch_size=self.batch_size, 
                           num_workers=self.num_dataloader_workers)
+        
