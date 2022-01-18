@@ -22,8 +22,14 @@ class DogsVsCats(Dataset):
         1: 'dog'
     }
 
-    def __init__(self, root):
-        self.root = root
+    def __init__(self, root, transform=None, target_transform=None, split='train'):
+        
+        assert split in ['train', 'val', 'test']
+        self.split=split
+        self.root=os.path.join(root, split)
+        self.transform = transform
+        self.target_transform = target_transform
+        
         self.dataframe = pd.DataFrame(
             columns={
                 'species': pd.Series(dtype=pd.StringDtype()), 
@@ -31,11 +37,13 @@ class DogsVsCats(Dataset):
                 'sample_number': pd.Series(dtype=pd.Int32Dtype()),
                 'label': pd.Series(pd.Int64Dtype())
             },
-            index=pd.Index(range(len(os.listdir(root)))), 
+            index=pd.Index(range(len(os.listdir(self.root)))), 
         )
         
-        with tqdm(os.listdir(root)) as pbar:
-            pbar.set_description('Loading annotation data')
+        with tqdm(
+            os.listdir(self.root)
+        ) as pbar:
+            pbar.set_description(f'Loading annotation data. Split: {self.split}.')
             for i, filename in enumerate(pbar):
 
                 species, number, ext = re.match('(\w+)\.(\d+)\.(\w+)', filename).groups()
@@ -58,6 +66,7 @@ class DogsVsCats(Dataset):
         self.dataframe = self.dataframe.reset_index(drop=True)
 
     def __getitem__(self, idx):
+        
         try:
             label = self.dataframe['label'][idx]
             img_filepath = os.path.join(self.root, self.dataframe['filename'][idx])
@@ -65,10 +74,17 @@ class DogsVsCats(Dataset):
             with open(img_filepath, 'rb') as f:
                 img = Image.open(f)
                 img.load()
-
-            return img, label
         except KeyError:
             raise IndexError
+        
+        # apply transforms if applicable:
+        if self.transform: 
+            img = self.transform(img)
+        if self.target_transform:
+            label = self.target_transform(label)
+
+        return img, label
+        
 
     def __len__(self):
         return len(self.dataframe)
@@ -102,46 +118,54 @@ class DogsVsCats(Dataset):
             transforms.Normalize(mean, std),
         ])
 
-#
-#
-#class DogVsCatsModule(pl.LightningDataModule):
-#    
-#    def __init__(self, image_size, root, batch_size=32):
-#    
-#        self.root = root
-#        self.image_size = image_size
-#        self.batch_size = batch_size
-#        
-#    def setup(self): 
-#        
-#        self.full_ds = DogsVsCats(self.root, shuffle=False)
-#        
-#        train_length = int(0.8 * len(self.full_ds))
-#        test_length = len(self.full_ds) - train_length
-#        
-#        self.train_ds, self.val_ds = random_split(
-#            self.full_ds,
-#            [train_length, test_length], 
-#        )
-#        
-#        # Apply augmentations by wrapping in map dataset
-#        self.train_ds = MapDataset(
-#            self.train_ds, 
-#            DogsVsCats.get_default_transform(
-#                target_size = self.image_size,
-#                use_augmentations = True
-#            )
-#        )
-#        self.val_ds = MapDataset(
-#            self.val_ds, 
-#            DogsVsCats.get_default_transform(
-#                target_size = self.image_size, 
-#                use_augmentations=False
-#            )
-#        )
-#        
-#    def train_dataloader(self):
-#        return DataLoader(self.train_ds, batch_size=self.batch_size)
-#    
-#    def val_dataloader(self):
-#        return DataLoader(self.val_ds, batch_size=self.batch_size)
+    
+class DogsVsCatsDataModule(pl.LightningDataModule):
+    
+    def __init__(self, root, batch_size, image_size, num_workers=8):
+        self.root=root 
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+        self.image_size = image_size
+    
+    def setup(self, stage=None): 
+         
+        self.train_ds = DogsVsCats(
+            self.root, 
+            transform=DogsVsCats.get_default_transform(
+                target_size=self.image_size, 
+                use_augmentations=True
+            ), 
+            split='train'
+        )
+        
+        self.val_ds = DogsVsCats(
+            self.root, 
+            transform=DogsVsCats.get_default_transform(
+                target_size=self.image_size, 
+                use_augmentations=False
+            ), 
+            split='val'
+        )
+        self.test_ds = DogsVsCats(
+            self.root, 
+            transform=DogsVsCats.get_default_transform(
+                target_size=self.image_size, 
+                use_augmentations=False
+            ), 
+            split='test'
+        )
+        
+    def train_dataloader(self):
+        return DataLoader(self.train_ds, batch_size=self.batch_size, 
+                          num_workers=self.num_dataloader_workers)
+    
+    def val_dataloader(self):
+        return DataLoader(self.val_ds, batch_size=self.batch_size, 
+                          num_workers=self.num_workers)
+    
+    def test_dataloader(self):
+        return DataLoader(self.test_ds, batch_size=self.config.batch_size, 
+                          num_workers=self.num_workers)
+        
+    
+    
