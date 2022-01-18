@@ -11,14 +11,14 @@ from torchvision import transforms as T
 from skimage.transform import resize
 from skimage.exposure import adjust_gamma, equalize_hist
 
-from main import DATA_DIRECTORY, DEFAULT_MODEL_PATH
+from train import DEFAULT_DATA_DIRECTORY, DEFAULT_MODEL_PATH
 from src.systems.vit_system import ViTSystem
 
 CKPT_PATH = '/Users/paulwilson/lightning_logs/default/version_0/checkpoints/epoch=0-step=624.ckpt'
 
 system = ViTSystem(
     DEFAULT_MODEL_PATH, 
-    DATA_DIRECTORY, 
+    DEFAULT_DATA_DIRECTORY, 
     batch_size=32,
 )
 
