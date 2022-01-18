@@ -1,9 +1,0 @@
-
-model:
-  pretrained_transformer_name: 'google/vit-large-patch16-384'
-
-train:
-  batch_size: 32
-  num_epochs: 1
-
-
