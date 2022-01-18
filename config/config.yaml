@@ -1,0 +1,17 @@
+
+
+model: 
+  pretrained_model_name_or_path: 'google/vit-large-patch16-384'
+  freeze_encoder_weights: true
+
+data: 
+  num_workers: 8
+  batch_size: 32
+  root: null
+  image_size: null   # infer from pretrained model config
+
+training: 
+  max_epochs: 1
+  logdir: null
+  
+
