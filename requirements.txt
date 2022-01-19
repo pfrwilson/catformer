@@ -1,9 +1,10 @@
-torch
+
 hydra-core
 omegaconf
 einops
-torchvision
-numpy
 pandas
-tqdm
 pillow
+pytorch-lightning
+transformers
+torchvision
+scikit-image
