@@ -3,3 +3,4 @@ outputs
 *.ipynb
 *.pyc
 *.ipynb
+.DS_store
