@@ -30,7 +30,7 @@ def main(config: DictConfig):
     datamodule = DogsVsCatsDataModule(
         root = config.data.root if config.data.root \
             else DEFAULT_DATA_ROOT, 
-        image_size = system.pretrained_vit.config.image_size,
+        image_size = config.model.image_size,
         batch_size=config.data.batch_size, 
         num_workers=config.data.num_workers
     )
