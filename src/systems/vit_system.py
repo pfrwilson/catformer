@@ -24,14 +24,20 @@ class ViTSystem(pl.LightningModule):
         self.save_hyperparameters(config)
         
         # pretrained vit model
-        self.pretrained_vit = ViTForImageClassification.from_pretrained(
+        pretrained_vit = ViTForImageClassification.from_pretrained(
             self.config.pretrained_model_name_or_path
         )
+        self.pretrained_vit_config = pretrained_vit.config
+        self.vit = pretrained_vit.vit
         
         if self.config.freeze_encoder_weights:
-            for parameter in list(self.pretrained_vit.vit.parameters()):   
+            for parameter in list(self.vit.parameters()):   
                 parameter.requires_grad = False
-    
+
+        self.interpolate_pos_encoding = \
+            self.config.image_size and \
+            (self.config.image_size != self.pretrained_vit_config.image_size)
+            
         self.id2label = {
             0: 'cat', 
             1: 'dog'
@@ -41,14 +47,16 @@ class ViTSystem(pl.LightningModule):
             'dog': 1
         }
         self.classifier = nn.Linear(
-            self.pretrained_vit.config.hidden_size, 2
+            self.pretrained_vit_config.hidden_size, 2
         )
         self.loss_fn = torch.nn.CrossEntropyLoss()
         
     def forward(self, x, output_attentions=False):
     
-        transformer_output = self.pretrained_vit.vit(
-            x, output_attentions=output_attentions
+        transformer_output = self.vit(
+            x, 
+            output_attentions=output_attentions, 
+            interpolate_pos_encoding=self.interpolate_pos_encoding
         )
         
         last_hidden_layer = transformer_output[0]
@@ -77,7 +85,7 @@ class ViTSystem(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         
         x, y = batch
-        logits = self(x)
+        logits = self(x)[0]
         y_hat = torch.argmax(logits, dim=-1)
         batch_size = y_hat.shape[0]
         
