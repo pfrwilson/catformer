@@ -92,10 +92,11 @@ class ViTSystem(pl.LightningModule):
         loss = self.loss_fn(logits, y)
         accuracy = torch.sum(y_hat == y)/batch_size
         
-        self.log('val_loss', loss, on_step=True, on_epoch=True)
+        self.log('val_loss', loss, prog_bar=True, on_step=True, on_epoch=True)
         self.log('val_accuracy', accuracy, prog_bar=True, on_step=True, on_epoch=True)
         return loss
     
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters())
+    
     
