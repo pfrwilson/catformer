@@ -18,6 +18,7 @@ DEFAULT_DATA_ROOT = os.path.join(
     'data' 
 )
 
+
 class DogsVsCats(Dataset):
 
     summary_statistics = {
@@ -32,8 +33,8 @@ class DogsVsCats(Dataset):
     def __init__(self, root, transform=None, target_transform=None, split='train'):
         
         assert split in ['train', 'val', 'test']
-        self.split=split
-        self.root=os.path.join(root, split)
+        self.split = split
+        self.root = os.path.join(root, split)
         self.transform = transform
         self.target_transform = target_transform
         
@@ -140,44 +141,32 @@ class DogsVsCatsDataModule(pl.LightningDataModule):
         self.use_augmentations_in_training = use_augmentations_in_training
     
     def setup(self, stage=None): 
-         
+
         self.train_ds = DogsVsCats(
-            self.root, 
-            transform=DogsVsCats.get_default_transform(
-                target_size=self.image_size, 
-                use_augmentations=self.use_augmentations_in_training
-            ), 
+            self.root,
             split='train'
         )
         
         self.val_ds = DogsVsCats(
-            self.root, 
-            transform=DogsVsCats.get_default_transform(
-                target_size=self.image_size, 
-                use_augmentations=False
-            ), 
+            self.root,
             split='val'
         )
         self.test_ds = DogsVsCats(
-            self.root, 
-            transform=DogsVsCats.get_default_transform(
-                target_size=self.image_size, 
-                use_augmentations=False
-            ), 
+            self.root,
             split='test'
         )
         
     def train_dataloader(self):
         return DataLoader(self.train_ds, batch_size=self.batch_size, 
-                          num_workers=self.num_workers)
+                          num_workers=self.num_workers, shuffle=True)
     
     def val_dataloader(self):
         return DataLoader(self.val_ds, batch_size=self.batch_size, 
-                          num_workers=self.num_workers)
+                          num_workers=self.num_workers, shuffle=True)
     
     def test_dataloader(self):
         return DataLoader(self.test_ds, batch_size=self.config.batch_size, 
-                          num_workers=self.num_workers)
+                          num_workers=self.num_workers, shuffle=True)
         
     
 
