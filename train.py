@@ -32,7 +32,8 @@ def main(config: DictConfig):
             else DEFAULT_DATA_ROOT, 
         image_size = config.model.image_size,
         batch_size=config.data.batch_size, 
-        num_workers=config.data.num_workers
+        num_workers=config.data.num_workers, 
+        use_augmentations_in_training=config.data.use_augmentations
     )
 
     trainer = pl.Trainer(
