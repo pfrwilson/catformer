@@ -45,7 +45,7 @@ def main(config: DictConfig):
     )
     
     trainer.fit(system, datamodule)
-
+    trainer.validate(system, datamodule)
 
 if __name__ == "__main__":
     main()
