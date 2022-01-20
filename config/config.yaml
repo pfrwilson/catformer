@@ -2,7 +2,7 @@
 
 model: 
   image_size: 384
-  pretrained_model_name_or_path: 'google/vit-large-patch16-384'
+  pretrained_model_name_or_path: 'google/vit-base-patch16-224'
   freeze_encoder_weights: true
   num_classes: 2
   id2label: {
@@ -11,13 +11,14 @@ model:
   }
 
 data: 
+  root: /home/paulw/data/dogs-vs-cats/data
   num_workers: 8
-  batch_size: 64
-  root: null
+  batch_size: 128
   image_size: 384  
   use_augmentations: true
 
 training: 
-  max_epochs: 3
-  logdir: null
-
+  mode: val
+  max_epochs: 1
+  logdir: ~/lightning_logs
+  ckpt_path: ~/lightning_logs/default/version_0/checkpoints/epoch=0-step=156.ckpt
