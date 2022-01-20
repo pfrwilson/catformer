@@ -4,3 +4,4 @@ outputs
 *.pyc
 *.ipynb
 .DS_store
+lightning_logs
