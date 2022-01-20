@@ -8,28 +8,18 @@ from pytorch_lightning.loggers import TensorBoardLogger
 import os
 import torch
 
-DEFAULT_DATA_ROOT = os.path.join(
-    os.environ['HOME'], 
-    'data', 
-    'dogs-vs-cats',
-    'data' 
-)
-
-DEFAULT_LOG_DIRECTORY = os.path.join(
-    os.environ['HOME'],
-    'lightning_logs'
-)
-
 DEFAULT_MODEL_PATH = 'google/vit-large-patch16-384'
 
 
 @hydra.main(config_path='config', config_name='config')
 def main(config: DictConfig):
-    
+
     system = ViTSystem(config.model)
+    if config.training.ckpt_path:
+        system = ViTSystem.load_from_checkpoint(config.training.ckpt_path)
     
     datamodule = DogsVsCatsDataModule(
-        root=config.data.root if config.data.root else DEFAULT_DATA_ROOT,
+        root=config.data.root,
         image_size=config.model.image_size,
         batch_size=config.data.batch_size, 
         num_workers=config.data.num_workers, 
@@ -38,16 +28,19 @@ def main(config: DictConfig):
 
     trainer = pl.Trainer(
         gpus=1 if torch.cuda.is_available() else None,
-        logger=TensorBoardLogger(
-            config.training.logdir if config.training.logdir else DEFAULT_LOG_DIRECTORY
-        ), 
-        max_epochs=config.training.max_epochs
+        default_root_dir=config.data.logdir,
+        max_epochs=config.training.max_epochs,
+        check_val_every_n_epoch=1
     )
     
-    trainer.fit(system, datamodule)
-    trainer.validate(system, datamodule)
-
-
+    if config.training.mode == 'train':
+        trainer.fit(system, datamodule,
+                    ckpt_path=config.training.ckpt_path)
+    
+    if config.training.mode == 'val':
+        trainer.validate(system, datamodule,
+                    ckpt_path=config.training.ckpt_path)
+        
 if __name__ == "__main__":
     main()
 

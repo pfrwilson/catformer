@@ -1,18 +1,23 @@
 
 
 model: 
-  image_size: 512
+  image_size: 384
   pretrained_model_name_or_path: 'google/vit-large-patch16-384'
   freeze_encoder_weights: true
+  num_classes: 2
+  id2label: {
+              0: 'cat',
+              1: 'dog'
+  }
 
 data: 
   num_workers: 8
-  batch_size: 32
+  batch_size: 64
   root: null
-  image_size: 512   # infer from pretrained model config
+  image_size: 384  
+  use_augmentations: true
 
 training: 
-  max_epochs: 1
+  max_epochs: 3
   logdir: null
-  
 

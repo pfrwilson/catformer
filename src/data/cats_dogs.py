@@ -11,6 +11,14 @@ import pytorch_lightning as pl
 import torch
 from torch.utils.data import DataLoader
 
+DEFAULT_DATA_ROOT = os.path.join(
+    os.environ['HOME'], 
+    'data', 
+    'dogs-vs-cats',
+    'data' 
+)
+
+
 class DogsVsCats(Dataset):
 
     summary_statistics = {
@@ -25,8 +33,8 @@ class DogsVsCats(Dataset):
     def __init__(self, root, transform=None, target_transform=None, split='train'):
         
         assert split in ['train', 'val', 'test']
-        self.split=split
-        self.root=os.path.join(root, split)
+        self.split = split
+        self.root = os.path.join(root, split)
         self.transform = transform
         self.target_transform = target_transform
         
@@ -89,6 +97,9 @@ class DogsVsCats(Dataset):
     def __len__(self):
         return len(self.dataframe)
 
+    def raw(self):
+        return RawDatasetContext(self)
+        
     @staticmethod
     def get_default_augmentations(target_size):
 
@@ -121,51 +132,53 @@ class DogsVsCats(Dataset):
     
 class DogsVsCatsDataModule(pl.LightningDataModule):
     
-    def __init__(self, root, batch_size, image_size, num_workers=8):
+    def __init__(self, root, batch_size, image_size, num_workers=8, 
+                 use_augmentations_in_training=True):
         self.root=root 
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.image_size = image_size
+        self.use_augmentations_in_training = use_augmentations_in_training
     
     def setup(self, stage=None): 
-         
+
         self.train_ds = DogsVsCats(
-            self.root, 
-            transform=DogsVsCats.get_default_transform(
-                target_size=self.image_size, 
-                use_augmentations=True
-            ), 
+            self.root,
             split='train'
         )
         
         self.val_ds = DogsVsCats(
-            self.root, 
-            transform=DogsVsCats.get_default_transform(
-                target_size=self.image_size, 
-                use_augmentations=False
-            ), 
+            self.root,
             split='val'
         )
         self.test_ds = DogsVsCats(
-            self.root, 
-            transform=DogsVsCats.get_default_transform(
-                target_size=self.image_size, 
-                use_augmentations=False
-            ), 
+            self.root,
             split='test'
         )
         
     def train_dataloader(self):
         return DataLoader(self.train_ds, batch_size=self.batch_size, 
-                          num_workers=self.num_workers)
+                          num_workers=self.num_workers, shuffle=True)
     
     def val_dataloader(self):
         return DataLoader(self.val_ds, batch_size=self.batch_size, 
-                          num_workers=self.num_workers)
+                          num_workers=self.num_workers, shuffle=True)
     
     def test_dataloader(self):
         return DataLoader(self.test_ds, batch_size=self.config.batch_size, 
-                          num_workers=self.num_workers)
+                          num_workers=self.num_workers, shuffle=True)
         
     
-    
+
+class RawDatasetContext():
+    def __init__(self, dataset):
+        self.dataset = dataset
+        self.temp = None
+        
+    def __enter__(self):
+        self.temp = self.dataset.transform
+        self.dataset.transform = None
+        
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        self.dataset.transform = self.temp
+        self.temp = None
