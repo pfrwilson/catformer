@@ -74,7 +74,7 @@ class ViTSystem(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         
-        img, label = batch
+        img, y = batch
         logits = self(img)['logits']
         y_hat = torch.argmax(logits, dim=-1)
         batch_size = y_hat.shape[0]
@@ -88,8 +88,8 @@ class ViTSystem(pl.LightningModule):
         
     def validation_step(self, batch, batch_idx):
         
-        x, y = batch
-        logits = self(x)[0]
+        img, y = batch
+        logits = self(img)['logits']
         y_hat = torch.argmax(logits, dim=-1)
         batch_size = y_hat.shape[0]
         
