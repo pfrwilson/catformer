@@ -23,13 +23,9 @@ class ViTSystem(pl.LightningModule):
         pretrained_vit = ViTForImageClassification.from_pretrained(
             self.config.pretrained_model_name_or_path
         )
-        feature_extractor = ViTFeatureExtractor.from_pretrained(
-            self.config.pretrained_model_name_or_path
-        )
 
         self.pretrained_vit_config = pretrained_vit.config
         self.vit = pretrained_vit.vit
-        self.feature_extractor = feature_extractor
 
         if self.config.freeze_encoder_weights:
             for parameter in list(self.vit.parameters()):   
@@ -41,12 +37,10 @@ class ViTSystem(pl.LightningModule):
 
         self.loss_fn = F.cross_entropy
         
-    def forward(self, img):
-
-        pixel_values = self.feature_extractor(img)['pixel_values']
+    def forward(self, x):
 
         transformer_output = self.vit(
-            pixel_values=pixel_values,
+            pixel_values=x,
             output_attentions=True,
             output_hidden_states=True,
             return_dict=True
