@@ -18,7 +18,7 @@ data:
   use_augmentations: true
 
 training: 
-  mode: val
+  mode: train
   max_epochs: 1
   logdir: ~/lightning_logs
-  ckpt_path: ~/lightning_logs/default/version_0/checkpoints/epoch=0-step=156.ckpt
+  ckpt_path: null #~/lightning_logs/default/version_0/checkpoints/epoch=0-step=156.ckpt

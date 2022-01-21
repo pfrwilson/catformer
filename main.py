@@ -28,7 +28,7 @@ def main(config: DictConfig):
 
     trainer = pl.Trainer(
         gpus=1 if torch.cuda.is_available() else None,
-        default_root_dir=config.data.logdir,
+        default_root_dir=config.training.logdir,
         max_epochs=config.training.max_epochs,
         check_val_every_n_epoch=1
     )
