@@ -54,9 +54,8 @@ class ViTSystem(pl.LightningModule):
         pooled = last_hidden_layer[:, 0, :]
 
         logits = self.classifier(pooled)
-        probs = F.softmax(logits, dim=-1).detach().numpy()
-
-        predictions = (lambda idx: self.config.id2label[idx])(np.argmax(probs, dim=-1))
+        probs = F.softmax(logits, dim=-1)
+        predictions = torch.argmax(probs, dim=-1)
 
         return {
             'logits': logits,
