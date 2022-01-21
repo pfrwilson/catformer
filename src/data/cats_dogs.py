@@ -144,13 +144,21 @@ class DogsVsCatsDataModule(pl.LightningDataModule):
 
         self.train_ds = DogsVsCats(
             self.root,
+            transform=DogsVsCats.get_default_transform(
+                self.image_size,
+                self.use_augmentations_in_training,
+            ),
             split='train'
         )
         
         self.val_ds = DogsVsCats(
             self.root,
+            transform=DogsVsCats.get_default_transform(
+                target_size=self.image_size, 
+            ),
             split='val'
         )
+        
         self.test_ds = DogsVsCats(
             self.root,
             split='test'
