@@ -1,0 +1,27 @@
+
+
+model: 
+  checkpoint: 
+
+data:
+  mode: from_dataset # from_png 
+  data_root: null    # if using an image from the dataset
+  idx: 0 
+  split: 'test'                   
+  img_root: null # if using a 
+
+# VISUALIZATION SETTINGS
+# specify which layer, head and query token 
+# to show the attention map for. 
+# null means the default - class token, last layer, average of heads.
+# 
+# for layers or tokens, specifying "all" will show the attention maps 
+# across each layer or token. 
+# for queries, specifying "all" will show the attentions for a selected
+# number of queries
+visualization: 
+  layer: -1      # "all", int, or None
+  head: null     # "all", int, or None
+  token: null 
+
+

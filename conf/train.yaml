@@ -1,7 +1,7 @@
 
 
 model: 
-  image_size: 224
+  image_size: 512
   pretrained_model_name_or_path: 'google/vit-base-patch16-224'
   freeze_encoder_weights: true
   num_classes: 2
@@ -9,16 +9,16 @@ model:
               0: 'cat',
               1: 'dog'
   }
+  checkpoint: null
 
 data: 
   root: /home/paulw/data/dogs-vs-cats/data
   num_workers: 8
-  batch_size: 128
-  image_size: 224
+  batch_size: 8
+  image_size: 512
   use_augmentations: true
 
 training: 
-  mode: train
   max_epochs: 1
-  logdir: ~/lightning_logs
-  ckpt_path: null #~/lightning_logs/default/version_0/checkpoints/epoch=0-step=156.ckpt
+  logdir: ~/logs
+  mode: train
