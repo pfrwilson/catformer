@@ -132,13 +132,12 @@ class DogsVsCats(Dataset):
     
 class DogsVsCatsDataModule(pl.LightningDataModule):
     
-    def __init__(self, root, batch_size, image_size, num_workers=8, 
-                 use_augmentations_in_training=True):
-        self.root=root 
-        self.batch_size = batch_size
-        self.num_workers = num_workers
-        self.image_size = image_size
-        self.use_augmentations_in_training = use_augmentations_in_training
+    def __init__(self, config):
+        self.root=config.root 
+        self.batch_size = config.batch_size
+        self.num_workers = config.num_workers
+        self.image_size = config.image_size
+        self.use_augmentations_in_training = config.use_augmentations
     
     def setup(self, stage=None): 
 
@@ -170,11 +169,11 @@ class DogsVsCatsDataModule(pl.LightningDataModule):
     
     def val_dataloader(self):
         return DataLoader(self.val_ds, batch_size=self.batch_size, 
-                          num_workers=self.num_workers, shuffle=True)
+                          num_workers=self.num_workers)
     
     def test_dataloader(self):
         return DataLoader(self.test_ds, batch_size=self.config.batch_size, 
-                          num_workers=self.num_workers, shuffle=True)
+                          num_workers=self.num_workers)
         
     
 
