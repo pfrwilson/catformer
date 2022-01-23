@@ -43,7 +43,8 @@ class ViTSystem(pl.LightningModule):
             pixel_values=x,
             output_attentions=True,
             output_hidden_states=True,
-            return_dict=True
+            return_dict=True,
+            interpolate_pos_encoding=self.config.image_size != self.pretrained_vit_config.image_size
         )
         
         last_hidden_layer = transformer_output['last_hidden_state']
@@ -59,8 +60,6 @@ class ViTSystem(pl.LightningModule):
 
         return {
             'logits': logits,
-            'probs': probs,
-            'predictions': predictions,
             'attentions': attentions,
             'hidden_states': hidden_states
         }
@@ -75,7 +74,6 @@ class ViTSystem(pl.LightningModule):
         loss = self.loss_fn(logits, y)
         accuracy = torch.sum(y_hat == y)/batch_size
         
-        self.log('loss', loss, prog_bar=True, on_step=True)
         self.log('accuracy', accuracy, on_step=True, prog_bar=True)
         return loss
         
